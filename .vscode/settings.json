@@ -51,5 +51,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Echoloparkour.sln"
+    "dotnet.defaultSolution": "Echoloparkour.slnx"
 }
