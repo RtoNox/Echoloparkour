@@ -13,11 +13,16 @@ public class SonarWave : MonoBehaviour
             if(radius > maxRadius)
             Destroy(gameObject);
         }
-    // private void OnTriggerEnter(Collider other)
-    //     {
-    //         HologramReveal reveal =
-    //         other.GetComponent<HologramReveal>();
-    //         if(reveal != null)
-    //         reveal.Reveal();
-    //     }
+    private void OnTriggerEnter(Collider other)
+    {
+        Debug.Log("Hit: " + other.name);
+
+        HologramReveal holo =
+        other.GetComponent<HologramReveal>();
+
+        if (holo != null)
+        {
+            holo.Reveal();
+        }
+    }
 }

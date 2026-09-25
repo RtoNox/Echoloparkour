@@ -19,7 +19,7 @@ public class scan : MonoBehaviour
     void SpawnScanner()
     {
         GameObject terrainScanner= Instantiate(Terrainscanner, gameObject.transform.position, Quaternion.identity) as GameObject;
-        
+         
         
         Destroy(terrainScanner, duration+1);
     }
