@@ -112,7 +112,7 @@ Material:
     m_Colors:
     - _BASE_COLOR: {r: 0, g: 0, b: 0, a: 0}
     - _EMISSION_COLOR: {r: 0, g: 0, b: 0, a: 0}
-    - _FresnelColor: {r: 0, g: 0.5320314, b: 0.9811321, a: 1}
+    - _FresnelColor: {r: 0, g: 0.088271625, b: 0.16226411, a: 1}
     - _SPECULAR_COLOR: {r: 1, g: 1, b: 1, a: 0}
     - _ScanLInesSpeed: {r: 0, g: 3, b: 0, a: 0}
     - _ScanLinesTiling: {r: 1, g: 1, b: 0, a: 0}
