@@ -73,6 +73,11 @@ public class PlayerController : MonoBehaviour
     private Vector3 climbTargetPos;
     private float climbTimer = 0f;
 
+    [Header("Echolocation settings")]
+    public GameObject Terrainscanner;
+    public float duration= 10;
+    public float size= 500;
+
     [Serializable]
     public class ScriptButton
     {
@@ -99,6 +104,13 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+
+        
+        if(Input.GetKeyDown(KeyCode.E))
+        {
+            SpawnScanner();
+        }
+
         HandleMouseLook();
 
         if (isClimbing)
@@ -480,5 +492,15 @@ public class PlayerController : MonoBehaviour
                     $"[PlayerController] '{btn.targetScript.name}' does not implement IScriptTrigger.");
             }
         }
+    }
+
+   
+
+    void SpawnScanner()
+    {
+        GameObject terrainScanner= Instantiate(Terrainscanner, gameObject.transform.position, Quaternion.identity) as GameObject;
+         
+        
+        Destroy(terrainScanner, duration+1);
     }
 }

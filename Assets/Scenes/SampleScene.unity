@@ -417,7 +417,6 @@ GameObject:
   - component: {fileID: 1149081864}
   - component: {fileID: 1149081863}
   - component: {fileID: 1149081869}
-  - component: {fileID: 1149081870}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -471,6 +470,10 @@ MonoBehaviour:
     key: 102
     targetScript: {fileID: 0}
     onKeyDownOnly: 0
+  Terrainscanner: {fileID: 1344125283120414209, guid: 0f6792ed0bdbf0842b56592165f7791b,
+    type: 3}
+  duration: 10
+  size: 500
 --- !u!54 &1149081864
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -621,22 +624,6 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &1149081870
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1149081862}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 439f3646e587d79459d49b919293d33f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::scan
-  Terrainscanner: {fileID: 1344125283120414209, guid: 0f6792ed0bdbf0842b56592165f7791b,
-    type: 3}
-  duration: 1
-  size: 100
 --- !u!1 &1261614233
 GameObject:
   m_ObjectHideFlags: 0
