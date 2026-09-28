@@ -76,6 +76,10 @@ public class PlayerController : MonoBehaviour
     public GameObject Terrainscanner;
     public float duration= 10;
     public float size= 500;
+    public float cooldown= 3f;
+    private float nextScan=0f;
+
+
 
     [Serializable]
     public class ScriptButton
@@ -105,9 +109,10 @@ public class PlayerController : MonoBehaviour
     {
 
         
-        if(Input.GetKeyDown(KeyCode.E))
+        if(Input.GetKeyDown(KeyCode.E) && Time.time >= nextScan)
         {
             SpawnScanner();
+            nextScan=Time.time + cooldown;
         }
 
         HandleMouseLook();
