@@ -67,7 +67,6 @@ public class PlayerController : MonoBehaviour
     private Vector3 currentHorizontalVel;
     private float xRotation = 0f;
 
-    // Climb state
     private bool isClimbing = false;
     private Vector3 climbStartPos;
     private Vector3 climbTargetPos;
@@ -123,10 +122,8 @@ public class PlayerController : MonoBehaviour
         CheckGrounded();
         HandleMovement();
 
-        // Climb gets first dibs on Space this frame.
         bool climbStarted = TryStartClimb();
 
-        // Only jump if we did not just start a climb.
         if (!climbStarted)
             HandleJumpAndGravity();
 
@@ -235,7 +232,7 @@ public class PlayerController : MonoBehaviour
         controller.Move(new Vector3(0f, velocity.y, 0f) * Time.deltaTime);
     }
 
-    // ---------- LEDGE CLIMB / VAULT ----------
+    // LEDGE CLIMB / VAULT
     // Returns true if a climb started this frame.
     // Works on any object with a corner/edge whose top is within
     // [minClimbHeight, maxClimbHeight] of the player's feet, as long
@@ -248,12 +245,6 @@ public class PlayerController : MonoBehaviour
         float halfHeight = controller.height * 0.5f;
         Vector3 feetPos = transform.position - Vector3.up * halfHeight;
 
-        // ---------------------------------------------------------
-        // 1) SAMPLE THE BODY FRONT
-        //    A grid of horizontal rays from feet to above head,
-        //    spread across the player's width. This catches corners,
-        //    thin walls, pillars, crates, etc.
-        // ---------------------------------------------------------
         const int VERTICAL_SAMPLES = 7;
         const int HORIZONTAL_SAMPLES = 5;
 
@@ -294,7 +285,6 @@ public class PlayerController : MonoBehaviour
                 {
                     if (h2.collider.transform.IsChildOf(transform)) continue;
 
-                    // Prefer hits near chest height (natural climb pose).
                     float score = Mathf.Abs(sampleY - chestY);
                     if (score < bestScore)
                     {
@@ -306,18 +296,12 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        // Fallback: short ledges/steps that forward rays can miss.
         if (!foundSurface)
         {
             if (!TryDetectShortLedge(feetPos, forward, out bestHit))
                 return false;
         }
 
-        // ---------------------------------------------------------
-        // 2) FIND THE TOP EDGE ABOVE THE HIT
-        //    Fan of downward casts at increasing forward offsets.
-        //    Handles irregular tops, chamfers, and thin corners.
-        // ---------------------------------------------------------
         Vector3 topOriginBase = bestHit.point + Vector3.up * ledgeCheckUpHeight;
         float downDistance = ledgeCheckUpHeight + 1.0f;
 
@@ -337,10 +321,8 @@ public class PlayerController : MonoBehaviour
             {
                 if (th.collider.transform.IsChildOf(transform)) continue;
 
-                // Must be above the wall hit (not the floor).
                 if (th.point.y <= bestHit.point.y + 0.02f) continue;
 
-                // Must be walkable-ish (not a vertical face).
                 if (Vector3.Angle(th.normal, Vector3.up) > 60f) continue;
 
                 topHit = th;
@@ -354,9 +336,6 @@ public class PlayerController : MonoBehaviour
         float ledgeHeight = topHit.point.y - feetPos.y;
         if (ledgeHeight < minClimbHeight || ledgeHeight > maxClimbHeight) return false;
 
-        // ---------------------------------------------------------
-        // 3) VERIFY LANDING CLEARANCE (capsule test)
-        // ---------------------------------------------------------
         Vector3 landingFeetPos = topHit.point + forward * climbForwardOffset;
         Vector3 landingCenter = landingFeetPos + Vector3.up * (halfHeight + climbHeightOffset);
 
@@ -385,9 +364,6 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        // ---------------------------------------------------------
-        // 4) START CLIMB
-        // ---------------------------------------------------------
         isClimbing = true;
         climbTimer = 0f;
         climbStartPos = transform.position;
@@ -406,13 +382,6 @@ public class PlayerController : MonoBehaviour
         return true;
     }
 
-    // -----------------------------------------------------------------
-    // Helpers
-    // -----------------------------------------------------------------
-
-    /// <summary>
-    /// True if the player capsule fits (no overlap) at the given center.
-    /// </summary>
     bool HasClearance(Vector3 center)
     {
         float radius = controller.radius * 0.95f;
@@ -431,9 +400,6 @@ public class PlayerController : MonoBehaviour
         return !blocked;
     }
 
-    /// <summary>
-    /// Catches short ledges/steps the forward rays can miss.
-    /// </summary>
     bool TryDetectShortLedge(Vector3 feetPos, Vector3 forward, out RaycastHit hit)
     {
         Vector3 origin = feetPos + Vector3.up * (controller.height * 0.15f);
