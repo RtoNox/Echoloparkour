@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
 
 [RequireComponent(typeof(CharacterController))]
-public class PlayerController : MonoBehaviour
+public class PlayerController : NetworkBehaviour
 {
     [Header("Movement")]
     public float walkSpeed = 4.5f;
@@ -133,6 +134,11 @@ public class PlayerController : MonoBehaviour
             HandleJumpAndGravity();
 
         HandleScriptButtons();
+    }
+    
+    public override void OnNetworkSpawn()
+    {
+        if (!IsOwner) Destroy(this);
     }
 
     void HandleMouseLook()
