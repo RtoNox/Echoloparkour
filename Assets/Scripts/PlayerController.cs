@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
+using UnityEngine.SceneManagement;
+
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : NetworkBehaviour
@@ -99,8 +101,13 @@ public class PlayerController : NetworkBehaviour
     void Start()
     {
         controller = GetComponent<CharacterController>();
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        if (SceneManager.GetActiveScene().name == "Lobby")
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+        // Cursor.lockState = CursorLockMode.Locked;
+        // Cursor.visible = false;
 
         if (playerCamera == null)
             playerCamera = GetComponentInChildren<Camera>();
@@ -108,6 +115,12 @@ public class PlayerController : NetworkBehaviour
 
     void Update()
     {
+
+        if (!IsOwner)
+            return;
+
+        if (SceneManager.GetActiveScene().name != "SampleScene")
+            return;
 
         
         if(Input.GetKeyDown(KeyCode.E) && Time.time >= nextScan)
