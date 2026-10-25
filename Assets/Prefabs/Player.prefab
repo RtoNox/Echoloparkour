@@ -224,6 +224,7 @@ MonoBehaviour:
   duration: 0.1
   size: 500
   cooldown: 3
+  sonarSFX: {fileID: 8300000, guid: d9c29b1e6fb05714aa12a660eb818a1f, type: 3}
 --- !u!143 &1106418958302601106
 CharacterController:
   m_ObjectHideFlags: 0

@@ -82,7 +82,9 @@ public class PlayerController : NetworkBehaviour
     public float cooldown= 3f;
     private float nextScan=0f;
 
-
+    [Header("SFX")]
+    [SerializeField] private AudioClip sonarSFX;
+    private AudioSource source;
 
     [Serializable]
     public class ScriptButton
@@ -100,6 +102,7 @@ public class PlayerController : NetworkBehaviour
 
     void Start()
     {
+        source=GetComponent<AudioSource>();
         controller = GetComponent<CharacterController>();
         if (SceneManager.GetActiveScene().name == "Lobby")
         {
@@ -489,8 +492,7 @@ public class PlayerController : NetworkBehaviour
     void SpawnScanner()
     {
         GameObject terrainScanner= Instantiate(Terrainscanner, gameObject.transform.position, Quaternion.identity) as GameObject;
-         
-        
+         SoundManager.instance.PlaySFX(sonarSFX, transform, 1f);
         Destroy(terrainScanner, duration+1);
     }
 }
