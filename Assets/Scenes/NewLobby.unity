@@ -1714,6 +1714,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1618108303}
+  - component: {fileID: 1618108304}
   m_Layer: 0
   m_Name: Menu
   m_TagString: Untagged
@@ -1739,6 +1740,37 @@ Transform:
   - {fileID: 689605508}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1618108304
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1618108302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 790276b757db72f469c488bd5e850478, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MainMenuEcholocation
+  menuCamera: {fileID: 2043242056}
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundRayDistance: 500
+  waveSpeed: 30
+  maxRadius: 500
+  revealDuration: 3
+  fadeDuration: 0.25
+  permanentReveal: 0
+  waveVisualPrefab: {fileID: 0}
+  clickMarkerPrefab: {fileID: 0}
+  clickMarkerLifetime: 0.5
+  sonarRingMaterial: {fileID: 2100000, guid: 3c2edc77b58ce8b48a61124aa39d5971, type: 2}
+  ringThickness: 0.2
+  ringSegments: 32
+  ringColor: {r: 0, g: 1, b: 1, a: 1}
+  ringFade: 1
+  buttons: []
 --- !u!1 &1624714214
 GameObject:
   m_ObjectHideFlags: 0
