@@ -28,6 +28,21 @@ public class MainMenuEcholocation : MonoBehaviour
     public Color ringColor = new Color(0f, 1f, 1f, 1f);
     [Range(0f, 1f)] public float ringFade = 1f;
 
+    // === Cooldown ===
+    [Header("Cooldown")]
+    [Tooltip("Minimum seconds between two waves being triggered by clicks. Set 0 to disable.")]
+    public float clickCooldown = 0.3f;
+
+    [Header("Audio")]
+    [Tooltip("Played once on every click that triggers a wave.")]
+    public AudioClip clickAudio;
+    [Tooltip("Played once per object revealed by the wave.")]
+    public AudioClip revealAudio;
+    [Range(0f, 1f)] public float clickVolume = 1f;
+    [Range(0f, 1f)] public float revealVolume = 1f;
+    public Vector2 revealPitchRange = new Vector2(0.95f, 1.05f);
+    public int audioPoolSize = 8;
+
     [Header("Buttons")]
     public List<MenuButton> buttons = new List<MenuButton>();
 
@@ -43,7 +58,6 @@ public class MainMenuEcholocation : MonoBehaviour
         [Tooltip("Optional: a legacy UI InputField revealed by the wave.")]
         public InputField uiInputField;
 
-        // === CHANGED: TMP_InputField replaced with a plain UI Text reference ===
         [Tooltip("Optional: a UI Text component used to display/read the input field's text.")]
         public Text inputText;
 
@@ -56,6 +70,14 @@ public class MainMenuEcholocation : MonoBehaviour
         [HideInInspector] public Renderer[] renderers;
         [HideInInspector] public Collider cubeCollider;
         [HideInInspector] public Vector3 worldPosition;
+
+        [HideInInspector] public List<Graphic> uiGraphics = new List<Graphic>();
+        [HideInInspector] public List<Color> uiBaseColors = new List<Color>();
+        [HideInInspector] public List<Renderer> labelRenderers = new List<Renderer>();
+        [HideInInspector] public List<Material> labelMaterials = new List<Material>();
+        [HideInInspector] public List<Color> labelBaseColors = new List<Color>();
+        [HideInInspector] public CanvasGroup uiCanvasGroup;
+        [HideInInspector] public CanvasGroup labelCanvasGroup;
 
         public bool HasInteractable =>
             uiButton != null || uiInputField != null || inputText != null;
@@ -74,6 +96,12 @@ public class MainMenuEcholocation : MonoBehaviour
     private Material ringMatInstance;
     private float ringAlpha = 0f;
 
+    private AudioSource[] audioPool;
+    private int audioPoolIndex = 0;
+
+    // === Cooldown timer ===
+    private float nextClickTime = 0f;
+
     void Start()
     {
         if (menuCamera == null) menuCamera = Camera.main;
@@ -89,12 +117,15 @@ public class MainMenuEcholocation : MonoBehaviour
             b.revealTimer = 0f;
             b.revealed = false;
 
+            CacheFadeTargets(b);
+
             SetButtonAlpha(b, 0f);
+            SetUIFade(b, 0f);
 
             SetInteractablesActive(b, false);
-            if (b.label != null) b.label.SetActive(false);
         }
 
+        CreateAudioPool();
         CreateRingObject();
 
         Cursor.lockState = CursorLockMode.None;
@@ -109,6 +140,49 @@ public class MainMenuEcholocation : MonoBehaviour
         HandleButtonClicks();
     }
 
+    // ---------- Audio pool ----------
+    void CreateAudioPool()
+    {
+        int size = Mathf.Max(1, audioPoolSize);
+        audioPool = new AudioSource[size];
+        for (int i = 0; i < size; i++)
+        {
+            var go = new GameObject($"SonarAudio_{i}");
+            go.transform.SetParent(transform, false);
+            var src = go.AddComponent<AudioSource>();
+            src.playOnAwake = false;
+            src.spatialBlend = 0f;
+            audioPool[i] = src;
+        }
+    }
+
+    AudioSource GetNextAudioSource()
+    {
+        if (audioPool == null || audioPool.Length == 0) CreateAudioPool();
+        var src = audioPool[audioPoolIndex];
+        audioPoolIndex = (audioPoolIndex + 1) % audioPool.Length;
+        return src;
+    }
+
+    void PlayClickAudio()
+    {
+        if (clickAudio == null) return;
+        var src = GetNextAudioSource();
+        src.pitch = 1f;
+        src.PlayOneShot(clickAudio, clickVolume);
+    }
+
+    void PlayRevealAudio()
+    {
+        if (revealAudio == null) return;
+        var src = GetNextAudioSource();
+        if (revealPitchRange.x < revealPitchRange.y)
+            src.pitch = Random.Range(revealPitchRange.x, revealPitchRange.y);
+        else
+            src.pitch = revealPitchRange.x;
+        src.PlayOneShot(revealAudio, revealVolume);
+    }
+
     // ---------- Input ----------
     void HandleInput()
     {
@@ -119,6 +193,10 @@ public class MainMenuEcholocation : MonoBehaviour
             {
                 return;
             }
+
+            // === Click cooldown gate ===
+            if (clickCooldown > 0f && Time.time < nextClickTime)
+                return;
 
             Ray ray = menuCamera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, groundRayDistance, groundMask, QueryTriggerInteraction.Ignore))
@@ -139,12 +217,18 @@ public class MainMenuEcholocation : MonoBehaviour
     // ---------- Echolocation wave ----------
     void TriggerWave(Vector3 origin)
     {
+        // === Stamp the click cooldown ===
+        if (clickCooldown > 0f)
+            nextClickTime = Time.time + clickCooldown;
+
         waveOrigin = origin;
         waveRadius = 0f;
         waveActive = true;
         ringAlpha = 1f;
 
         hitByCurrentWave.Clear();
+
+        PlayClickAudio();
 
         if (waveVisualPrefab != null)
         {
@@ -218,6 +302,8 @@ public class MainMenuEcholocation : MonoBehaviour
             b.revealed = true;
         else
             b.revealTimer = revealDuration;
+
+        PlayRevealAudio();
     }
 
     // ---------- Procedural ring ----------
@@ -314,6 +400,76 @@ public class MainMenuEcholocation : MonoBehaviour
             ringMatInstance.SetColor("_BaseColor", c);
     }
 
+    // ---------- Cache fade targets ----------
+    void CacheFadeTargets(MenuButton b)
+    {
+        b.uiGraphics.Clear();
+        b.uiBaseColors.Clear();
+        b.labelRenderers.Clear();
+        b.labelMaterials.Clear();
+        b.labelBaseColors.Clear();
+
+        if (b.uiButton != null)
+            b.uiCanvasGroup = b.uiButton.GetComponentInParent<CanvasGroup>();
+        if (b.uiInputField != null && b.uiCanvasGroup == null)
+            b.uiCanvasGroup = b.uiInputField.GetComponentInParent<CanvasGroup>();
+
+        if (b.label != null)
+            b.labelCanvasGroup = b.label.GetComponent<CanvasGroup>();
+        if (b.labelCanvasGroup == null && b.label != null)
+            b.labelCanvasGroup = b.label.GetComponentInParent<CanvasGroup>();
+
+        var seen = new HashSet<Graphic>();
+
+        if (b.uiButton != null)
+            CollectGraphics(b.uiButton.gameObject, b.uiGraphics, b.uiBaseColors, seen);
+
+        if (b.uiInputField != null)
+        {
+            CollectGraphics(b.uiInputField.gameObject, b.uiGraphics, b.uiBaseColors, seen);
+            if (b.uiInputField.textComponent != null)
+                CollectGraphics(b.uiInputField.textComponent.gameObject,
+                                b.uiGraphics, b.uiBaseColors, seen);
+            if (b.uiInputField.placeholder is Graphic ph)
+                CollectGraphics(ph.gameObject, b.uiGraphics, b.uiBaseColors, seen);
+        }
+
+        if (b.inputText != null)
+            CollectGraphics(b.inputText.gameObject, b.uiGraphics, b.uiBaseColors, seen);
+
+        if (b.label != null)
+        {
+            var lrs = b.label.GetComponentsInChildren<Renderer>(true);
+            foreach (var r in lrs)
+            {
+                b.labelRenderers.Add(r);
+                foreach (var mat in r.materials)
+                {
+                    b.labelMaterials.Add(mat);
+                    Color baseCol = Color.white;
+                    if (mat.HasProperty("_BaseColor")) baseCol = mat.GetColor("_BaseColor");
+                    else if (mat.HasProperty("_Color")) baseCol = mat.GetColor("_Color");
+                    b.labelBaseColors.Add(baseCol);
+                }
+            }
+
+            CollectGraphics(b.label, b.uiGraphics, b.uiBaseColors, seen);
+        }
+    }
+
+    void CollectGraphics(GameObject root, List<Graphic> outGfx, List<Color> outCols, HashSet<Graphic> seen)
+    {
+        if (root == null) return;
+        var gfx = root.GetComponentsInChildren<Graphic>(true);
+        foreach (var g in gfx)
+        {
+            if (g == null || seen.Contains(g)) continue;
+            seen.Add(g);
+            outGfx.Add(g);
+            outCols.Add(g.color);
+        }
+    }
+
     // ---------- Button fade ----------
     void UpdateButtonFades()
     {
@@ -334,22 +490,64 @@ public class MainMenuEcholocation : MonoBehaviour
             b.currentAlpha = Mathf.MoveTowards(b.currentAlpha, target, step);
 
             SetButtonAlpha(b, b.currentAlpha);
+            SetUIFade(b, b.currentAlpha);
 
             bool visible = b.currentAlpha > 0.01f;
             SetInteractablesActive(b, visible);
-            if (b.label != null && b.label.activeSelf != visible)
-                b.label.SetActive(visible);
         }
     }
 
-    // === MODIFIED: now handles InputField + Text ===
+    void SetUIFade(MenuButton b, float alpha)
+    {
+        alpha = Mathf.Clamp01(alpha);
+
+        if (b.uiCanvasGroup != null)
+        {
+            b.uiCanvasGroup.alpha = alpha;
+            b.uiCanvasGroup.interactable = alpha > 0.01f;
+            b.uiCanvasGroup.blocksRaycasts = alpha > 0.01f;
+        }
+        if (b.labelCanvasGroup != null)
+        {
+            b.labelCanvasGroup.alpha = alpha;
+        }
+
+        for (int i = 0; i < b.uiGraphics.Count; i++)
+        {
+            var g = b.uiGraphics[i];
+            if (g == null) continue;
+            Color c = b.uiBaseColors[i];
+            c.a *= alpha;
+            g.color = c;
+            if (!g.gameObject.activeSelf) g.gameObject.SetActive(true);
+        }
+
+        for (int i = 0; i < b.labelMaterials.Count; i++)
+        {
+            var mat = b.labelMaterials[i];
+            if (mat == null) continue;
+            Color c = b.labelBaseColors[i];
+            c.a *= alpha;
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", c);
+            if (mat.HasProperty("_Color")) mat.SetColor("_Color", c);
+        }
+        foreach (var r in b.labelRenderers)
+        {
+            if (r != null) r.enabled = alpha > 0.001f;
+        }
+
+        if (b.label != null)
+        {
+            bool show = alpha > 0.01f;
+            if (b.label.activeSelf != show && b.labelCanvasGroup == null && b.labelRenderers.Count == 0)
+                b.label.SetActive(show);
+        }
+    }
+
     void SetInteractablesActive(MenuButton b, bool active)
     {
         if (b.uiButton != null) b.uiButton.interactable = active;
         if (b.uiInputField != null) b.uiInputField.interactable = active;
-        // Text isn't interactable; toggle its visibility instead
-        if (b.inputText != null && b.inputText.gameObject.activeSelf != active)
-            b.inputText.gameObject.SetActive(active);
     }
 
     void SetButtonAlpha(MenuButton b, float alpha)
@@ -398,7 +596,6 @@ public class MainMenuEcholocation : MonoBehaviour
                 {
                     b.uiButton.onClick.Invoke();
                 }
-                // === MODIFIED: focus the InputField so the player can type ===
                 if (b.uiInputField != null && b.uiInputField.interactable)
                 {
                     b.uiInputField.ActivateInputField();

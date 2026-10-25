@@ -14,5 +14,14 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Widgets/Scenes/WidgetsQuickstart.unity
     guid: 4c46ed7f2520ced4bbbc3eb0193fa328
+  - enabled: 1
+    path: Assets/Scenes/NewLobby.unity
+    guid: 05d40b88f49ad6045a342aacce886d04
+  - enabled: 1
+    path: Assets/Scenes/JoinRoomByCode.unity
+    guid: 719118fbbb5e5f048afa76c9c6abba89
+  - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: d73453e0e12272541bd5c07cfbf76d00
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0
