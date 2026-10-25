@@ -129,6 +129,7 @@ MonoBehaviour:
   speed: 50
   maxRadius: 500
   objpingSFX: {fileID: 8300000, guid: 5f83a63e3e389104198733b63e6c2aec, type: 3}
+  plyrpingSFX: {fileID: 8300000, guid: 308be9aebf61ece4b98fabbd8f47290a, type: 3}
 --- !u!54 &-7812655049092753105
 Rigidbody:
   m_ObjectHideFlags: 0

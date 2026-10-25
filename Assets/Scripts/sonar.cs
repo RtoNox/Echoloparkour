@@ -5,6 +5,7 @@ public class SonarWave : MonoBehaviour
     public float maxRadius = 500f;
     float radius;
     [SerializeField] private AudioClip objpingSFX;
+    [SerializeField] private AudioClip plyrpingSFX;
     private AudioSource source;
 
 
@@ -27,6 +28,10 @@ public class SonarWave : MonoBehaviour
         if(other.CompareTag("object"))
         {
             SoundManager.instance.PlaySFX(objpingSFX, transform, 0.5f);
+        }
+        if(other.CompareTag("Player"))
+        {
+            SoundManager.instance.PlaySFX(plyrpingSFX, transform, 0.5f);
         }
 
         HologramReveal holo =
