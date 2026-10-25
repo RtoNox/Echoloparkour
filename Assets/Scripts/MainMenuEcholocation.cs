@@ -370,8 +370,13 @@ public class MainMenuEcholocation : MonoBehaviour
             int vi = i * 2;
             int vn = next * 2;
             int t = i * 6;
-            tris[t + 0] = vi + 0; tris[t + 1] = vi + 1; tris[t + 2] = vn + 1;
-            tris[t + 3] = vi + 0; tris[t + 4] = vn + 1; tris[t + 5] = vn + 0;
+            tris[t + 0] = vi + 0;
+            tris[t + 1] = vn + 1;
+            tris[t + 2] = vi + 1;
+
+            tris[t + 3] = vi + 0;
+            tris[t + 4] = vn + 0;
+            tris[t + 5] = vn + 1;
         }
 
         ringMesh.Clear();

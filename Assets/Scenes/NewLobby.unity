@@ -1854,10 +1854,12 @@ MonoBehaviour:
   revealDuration: 3
   fadeDuration: 0.25
   permanentReveal: 0
-  waveVisualPrefab: {fileID: 0}
-  clickMarkerPrefab: {fileID: 0}
+  waveVisualPrefab: {fileID: 8842652250661950197, guid: 3beab9f6ce6ffae4b838961e75b73fc3,
+    type: 3}
+  clickMarkerPrefab: {fileID: 8414006444468376168, guid: f1448045ddfa20342b5048aeb4974939,
+    type: 3}
   clickMarkerLifetime: 0.5
-  sonarRingMaterial: {fileID: 2100000, guid: 3c2edc77b58ce8b48a61124aa39d5971, type: 2}
+  sonarRingMaterial: {fileID: 2100000, guid: 5ef0686439768544d962af4e44b82ff4, type: 2}
   ringThickness: 0.2
   ringSegments: 32
   ringColor: {r: 0, g: 1, b: 1, a: 1}
