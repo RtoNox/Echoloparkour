@@ -225,6 +225,14 @@ MonoBehaviour:
   size: 500
   cooldown: 3
   sonarSFX: {fileID: 8300000, guid: d9c29b1e6fb05714aa12a660eb818a1f, type: 3}
+  footstepSFXs:
+  - {fileID: 8300000, guid: 800b27fd2012ba54fb28f0573a0a0aeb, type: 3}
+  - {fileID: 8300000, guid: a796a96eaf8490149a7fa9ed05328a63, type: 3}
+  - {fileID: 8300000, guid: 7a036f819d2216b449fe63e8dafbd2d0, type: 3}
+  - {fileID: 8300000, guid: c76d079da2845e345a83047cae0cde41, type: 3}
+  - {fileID: 8300000, guid: e0c612f0afa9c644f8111362b2866156, type: 3}
+  - {fileID: 8300000, guid: 9648fc0b8327a464aba27617ddac9ce8, type: 3}
+  footstepInterval: 0.5
 --- !u!143 &1106418958302601106
 CharacterController:
   m_ObjectHideFlags: 0

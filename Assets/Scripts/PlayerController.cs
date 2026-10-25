@@ -84,6 +84,9 @@ public class PlayerController : NetworkBehaviour
 
     [Header("SFX")]
     [SerializeField] private AudioClip sonarSFX;
+    [SerializeField] private AudioClip[] footstepSFXs;
+    [SerializeField] private float footstepInterval = 0.5f;
+    private float footstepTimer;
     private AudioSource source;
 
     [Serializable]
@@ -227,6 +230,28 @@ public class PlayerController : NetworkBehaviour
         );
 
         controller.Move(currentHorizontalVel * Time.deltaTime);
+
+        if (isGrounded && inputDir.magnitude > 0.1f)
+        {
+            footstepTimer -= Time.deltaTime;
+
+            if (footstepTimer <= 0f)
+            {
+                SoundManager.instance.PlayRandomSFX(
+                footstepSFXs,
+                transform,
+                0.5f
+                );
+
+                footstepTimer = Input.GetKey(KeyCode.LeftShift)
+                ? 0.3f    // sprint
+                : 0.5f;   // walk
+            }
+        }
+        else
+        {
+            footstepTimer = 0f;
+        }
     }
 
     void HandleJumpAndGravity()
