@@ -9,6 +9,12 @@ using ParrelSync;
 
 public class MainMenuManager : MonoBehaviour
 {
+    private void Awake()
+    {
+        QualitySettings.vSyncCount = 0;
+        Application.targetFrameRate = 60;
+    }
+    
     public GameObject profileScreenUI;
 
     [Header("Profile")]
