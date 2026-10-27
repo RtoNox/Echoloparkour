@@ -8,7 +8,7 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private GameObject menuPanel;
 
     [Header("Scene Settings")]
-    [SerializeField] private string lobbySceneName = "Lobby";
+    [SerializeField] private string lobbySceneName = "NewLobby";
 
     private bool isMenuOpen = false;
 
