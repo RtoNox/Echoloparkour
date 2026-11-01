@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
@@ -54,6 +55,7 @@ public class PlayerController : NetworkBehaviour
     public bool debugClimbRays = true;
 
     private bool isGrounded;
+    private bool wasGrounded;
     private GameObject groundObject;
     private float lastGroundedTime;
     private float lastJumpPressedTime;
@@ -85,8 +87,16 @@ public class PlayerController : NetworkBehaviour
     [Header("SFX")]
     [SerializeField] private AudioClip sonarSFX;
     [SerializeField] private AudioClip[] footstepSFXs;
+    [SerializeField] private AudioClip[] FallingSFXs;
     [SerializeField] private float footstepInterval = 0.5f;
     private float footstepTimer;
+    [SerializeField] private float highFallThreshold = 10f;
+    [SerializeField] private float lowFallThreshold = 3f;
+    private float airStartHeight;
+    private Coroutine fallingCoroutine;
+    private AudioSource fallLoopSource;
+
+
     private AudioSource source;
 
     [Serializable]
@@ -145,6 +155,7 @@ public class PlayerController : NetworkBehaviour
         }
 
         CheckGrounded();
+        HandleFallingSFX();
         HandleMovement();
 
         bool climbStarted = TryStartClimb();
@@ -174,6 +185,8 @@ public class PlayerController : NetworkBehaviour
 
     void CheckGrounded()
     {
+
+        wasGrounded = isGrounded; 
         Vector3 origin = groundCheckPoint != null ? groundCheckPoint.position : transform.position;
         float dist = groundCheckDistance + 0.1f;
 
@@ -206,8 +219,88 @@ public class PlayerController : NetworkBehaviour
         {
             Debug.DrawRay(origin, Vector3.down * dist, isGrounded ? Color.green : Color.red);
         }
+        if (wasGrounded && !isGrounded)
+        {
+            airStartHeight = transform.position.y;
+        }
+
+
+
+        wasGrounded = isGrounded;
     }
 
+
+private IEnumerator PlayHighFallSequence()
+{
+    SoundManager.instance.PlaySFX(
+        FallingSFXs[0],
+        transform,
+        1f
+    );
+
+    yield return new WaitForSeconds(FallingSFXs[0].length);
+
+    if (isGrounded)
+    {
+        fallingCoroutine = null;
+        yield break;
+    }
+
+    fallLoopSource = SoundManager.instance.PlayLoopingSFX(
+        FallingSFXs[1],
+        transform,
+        1f
+    );
+
+    fallingCoroutine = null;
+}
+
+
+void HandleFallingSFX()
+{
+    float fallDistance = airStartHeight - transform.position.y;
+
+    if (!isGrounded)
+    {
+        // High fall:
+        // Play FallingSFXs[0] once, then loop FallingSFXs[1]
+        if (fallDistance >= highFallThreshold &&
+            fallingCoroutine == null &&
+            fallLoopSource == null)
+        {
+            fallingCoroutine = StartCoroutine(PlayHighFallSequence());
+        }
+
+        // Short fall:
+        // Just loop FallingSFXs[1]
+        else if (fallDistance >= lowFallThreshold &&
+                 fallLoopSource == null &&
+                 fallingCoroutine == null)
+        {
+            fallLoopSource = SoundManager.instance.PlayLoopingSFX(
+                FallingSFXs[1],
+                transform,
+                1f
+            );
+        }
+    }
+    else
+    {
+        // Landed: stop everything immediately
+        if (fallingCoroutine != null)
+        {
+            StopCoroutine(fallingCoroutine);
+            fallingCoroutine = null;
+        }
+
+        if (fallLoopSource != null)
+        {
+            fallLoopSource.Stop();
+            Destroy(fallLoopSource.gameObject);
+            fallLoopSource = null;
+        }
+    }
+}
     void HandleMovement()
     {
         float x = Input.GetAxisRaw("Horizontal");

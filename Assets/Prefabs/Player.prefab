@@ -161,7 +161,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 527090241
+  GlobalObjectIdHash: 3435861267
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -232,6 +232,9 @@ MonoBehaviour:
   - {fileID: 8300000, guid: c76d079da2845e345a83047cae0cde41, type: 3}
   - {fileID: 8300000, guid: e0c612f0afa9c644f8111362b2866156, type: 3}
   - {fileID: 8300000, guid: 9648fc0b8327a464aba27617ddac9ce8, type: 3}
+  FallingSFXs:
+  - {fileID: 8300000, guid: 3aff1130cdb6c3a48a86a9922f7d0b0d, type: 3}
+  - {fileID: 8300000, guid: e32c0ec99a0e78a40a904d0c0144bc74, type: 3}
   footstepInterval: 0.5
 --- !u!143 &1106418958302601106
 CharacterController:
