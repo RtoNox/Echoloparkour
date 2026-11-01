@@ -236,6 +236,10 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 3aff1130cdb6c3a48a86a9922f7d0b0d, type: 3}
   - {fileID: 8300000, guid: e32c0ec99a0e78a40a904d0c0144bc74, type: 3}
   footstepInterval: 0.5
+  highFallThreshold: 5
+  lowFallThreshold: 0.5
+  softLandingSFX: {fileID: 8300000, guid: b5508d3da8441ce44863b93d762e3517, type: 3}
+  hardLandingSFX: {fileID: 8300000, guid: 29d6729479c12ca46aff861acfbf6b48, type: 3}
 --- !u!143 &1106418958302601106
 CharacterController:
   m_ObjectHideFlags: 0

@@ -53,7 +53,7 @@ public class PlayerController : NetworkBehaviour
     public float groundCheckRadius = 0.28f;
     public bool debugGroundRay = true;
     public bool debugClimbRays = true;
-
+    private bool justLanded;
     private bool isGrounded;
     private bool wasGrounded;
     private GameObject groundObject;
@@ -95,7 +95,8 @@ public class PlayerController : NetworkBehaviour
     private float airStartHeight;
     private Coroutine fallingCoroutine;
     private AudioSource fallLoopSource;
-
+    [SerializeField] private AudioClip softLandingSFX;
+    [SerializeField] private AudioClip hardLandingSFX;
 
     private AudioSource source;
 
@@ -184,50 +185,45 @@ public class PlayerController : NetworkBehaviour
     }
 
     void CheckGrounded()
+{
+    bool previousGrounded = isGrounded;
+
+    Vector3 origin = groundCheckPoint != null ? groundCheckPoint.position : transform.position;
+    float dist = groundCheckDistance + 0.1f;
+
+    isGrounded = false;
+    groundObject = null;
+
+    RaycastHit[] hits = Physics.SphereCastAll(
+        origin,
+        groundCheckRadius,
+        Vector3.down,
+        dist,
+        ~0,
+        QueryTriggerInteraction.Ignore
+    );
+
+    foreach (var hit in hits)
     {
+        if (hit.collider.transform.IsChildOf(transform))
+            continue;
 
-        wasGrounded = isGrounded; 
-        Vector3 origin = groundCheckPoint != null ? groundCheckPoint.position : transform.position;
-        float dist = groundCheckDistance + 0.1f;
-
-        isGrounded = false;
-        groundObject = null;
-
-        RaycastHit[] hits = Physics.SphereCastAll(
-            origin,
-            groundCheckRadius,
-            Vector3.down,
-            dist,
-            ~0,
-            QueryTriggerInteraction.Ignore
-        );
-
-        foreach (var hit in hits)
-        {
-            if (hit.collider.transform.IsChildOf(transform))
-                continue;
-
-            isGrounded = true;
-            groundObject = hit.collider.gameObject;
-            break;
-        }
-
-        if (isGrounded)
-            lastGroundedTime = Time.time;
-
-        if (debugGroundRay)
-        {
-            Debug.DrawRay(origin, Vector3.down * dist, isGrounded ? Color.green : Color.red);
-        }
-        if (wasGrounded && !isGrounded)
-        {
-            airStartHeight = transform.position.y;
-        }
-
-
-
-        wasGrounded = isGrounded;
+        isGrounded = true;
+        groundObject = hit.collider.gameObject;
+        break;
     }
+
+    justLanded = !previousGrounded && isGrounded;
+
+    if (previousGrounded && !isGrounded)
+    {
+        airStartHeight = transform.position.y;
+        Debug.Log($"Started fall at {airStartHeight}");
+    }   
+
+    if (isGrounded)
+        lastGroundedTime = Time.time;
+}
 
 
 private IEnumerator PlayHighFallSequence()
@@ -262,21 +258,22 @@ void HandleFallingSFX()
 
     if (!isGrounded)
     {
-        // High fall:
-        // Play FallingSFXs[0] once, then loop FallingSFXs[1]
         if (fallDistance >= highFallThreshold &&
             fallingCoroutine == null &&
             fallLoopSource == null)
         {
-            fallingCoroutine = StartCoroutine(PlayHighFallSequence());
-        }
+            Debug.Log("Starting high fall sequence");
 
-        // Short fall:
-        // Just loop FallingSFXs[1]
+            fallingCoroutine = StartCoroutine(
+                PlayHighFallSequence()
+            );
+        }
         else if (fallDistance >= lowFallThreshold &&
                  fallLoopSource == null &&
                  fallingCoroutine == null)
         {
+            Debug.Log("Starting low fall loop");
+
             fallLoopSource = SoundManager.instance.PlayLoopingSFX(
                 FallingSFXs[1],
                 transform,
@@ -284,9 +281,31 @@ void HandleFallingSFX()
             );
         }
     }
+
     else
     {
-        // Landed: stop everything immediately
+        // Just landed
+        if (justLanded)
+        {
+
+            if (fallDistance >= highFallThreshold)
+            {
+                SoundManager.instance.PlaySFX(
+                    hardLandingSFX,
+                    transform,
+                    1f
+            );
+            }
+            else if (fallDistance >= lowFallThreshold)
+            {
+                SoundManager.instance.PlaySFX(
+                    softLandingSFX,
+                    transform,
+                    1f
+                );
+            }
+        }
+
         if (fallingCoroutine != null)
         {
             StopCoroutine(fallingCoroutine);
